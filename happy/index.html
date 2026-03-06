@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Rose Garden</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --rose-green: #99ed91; /* สีเขียวใบกุหลาบ */
+            --rose-light-green: #65df46; /* สีเขียวอ่อนสำหรับไล่เฉด */
+            --accent-red: #ff4d6d;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            overflow: hidden;
+            font-family: 'Kanit', sans-serif;
+            color: white;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* พื้นหลังดวงดาว */
+        .stars-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100vh;
+            text-align: center;
+            animation: fadeIn 1.2s ease;
+        }
+        .active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* =========================================
+           หน้า 1: สวนกุหลาบ (Rose Garden)
+           ========================================= */
+        #fireworks-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .garden {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            height: 450px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin-bottom: 30px;
+            z-index: 10;
+        }
+
+        /* แก้ไขสีก้านให้เป็นสีเขียวกุหลาบ */
+        .stem {
+            position: absolute;
+            bottom: 0;
+            width: 6px;
+            background: linear-gradient(to top, #bc8036, var(--rose-light-green));
+            border-radius: 4px;
+            transform-origin: bottom center;
+            transform: translateX(-50%) rotate(var(--stem-angle)) scaleY(0);
+            animation: growStem 2.5s ease-out forwards;
+            animation-delay: var(--bloom-delay);
+            left: var(--stem-left);
+            height: var(--stem-height);
+            box-shadow: inset -1px 0 2px rgba(0,0,0,0.5);
+        }
+
+        /* เพิ่มหนามกุหลาบเล็กๆ */
+        .stem::after {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: -3px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 5px 6px 5px 0;
+            border-color: transparent var(--rose-green) transparent transparent;
+            transform: rotate(20deg);
+            filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.3));
+        }
+
+        .flower-head {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            font-size: var(--flower-size);
+            filter: drop-shadow(0 0 15px rgba(255, 77, 109, 0.6));
+            animation: bloomFlower 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation-delay: calc(var(--bloom-delay) + 1.8s);
+        }
+
+        @keyframes growStem { to { transform: translateX(-50%) rotate(var(--stem-angle)) scaleY(1); } }
+        @keyframes bloomFlower { to { transform: translateX(-50%) scale(1); } }
+
+        /* การตั้งค่า 21 ดอก */
+        .stem:nth-child(1)  { --stem-left: 50%; --stem-height: 350px; --stem-angle: 2deg;   --bloom-delay: 0.5s; --flower-size: 85px; }
+        .stem:nth-child(2)  { --stem-left: 45%; --stem-height: 280px; --stem-angle: -10deg; --bloom-delay: 0.7s; --flower-size: 70px; }
+        .stem:nth-child(3)  { --stem-left: 55%; --stem-height: 300px; --stem-angle: 8deg;   --bloom-delay: 0.9s; --flower-size: 75px; }
+        .stem:nth-child(4)  { --stem-left: 35%; --stem-height: 220px; --stem-angle: -20deg; --bloom-delay: 1.2s; --flower-size: 60px; }
+        .stem:nth-child(5)  { --stem-left: 25%; --stem-height: 180px; --stem-angle: -25deg; --bloom-delay: 1.5s; --flower-size: 55px; }
+        .stem:nth-child(6)  { --stem-left: 15%; --stem-height: 250px; --stem-angle: -15deg; --bloom-delay: 1.8s; --flower-size: 65px; }
+        .stem:nth-child(7)  { --stem-left: 5%;  --stem-height: 140px; --stem-angle: -30deg; --bloom-delay: 2.1s; --flower-size: 50px; }
+        .stem:nth-child(8)  { --stem-left: 30%; --stem-height: 310px; --stem-angle: -5deg;  --bloom-delay: 2.3s; --flower-size: 72px; }
+        .stem:nth-child(9)  { --stem-left: 10%; --stem-height: 200px; --stem-angle: -22deg; --bloom-delay: 2.6s; --flower-size: 58px; }
+        .stem:nth-child(10) { --stem-left: 65%; --stem-height: 240px; --stem-angle: 18deg;  --bloom-delay: 1.3s; --flower-size: 62px; }
+        .stem:nth-child(11) { --stem-left: 75%; --stem-height: 190px; --stem-angle: 28deg;  --bloom-delay: 1.6s; --flower-size: 56px; }
+        .stem:nth-child(12) { --stem-left: 85%; --stem-height: 260px; --stem-angle: 12deg;  --bloom-delay: 1.9s; --flower-size: 68px; }
+        .stem:nth-child(13) { --stem-left: 95%; --stem-height: 150px; --stem-angle: 32deg;  --bloom-delay: 2.2s; --flower-size: 52px; }
+        .stem:nth-child(14) { --stem-left: 70%; --stem-height: 320px; --stem-angle: 6deg;   --bloom-delay: 2.4s; --flower-size: 78px; }
+        .stem:nth-child(15) { --stem-left: 90%; --stem-height: 210px; --stem-angle: 24deg;  --bloom-delay: 2.7s; --flower-size: 59px; }
+        .stem:nth-child(16) { --stem-left: 40%; --stem-height: 160px; --stem-angle: -8deg;  --bloom-delay: 2.9s; --flower-size: 48px; z-index: 5; }
+        .stem:nth-child(17) { --stem-left: 60%; --stem-height: 170px; --stem-angle: 5deg;   --bloom-delay: 3.1s; --flower-size: 49px; z-index: 5; }
+        .stem:nth-child(18) { --stem-left: 20%; --stem-height: 230px; --stem-angle: -12deg; --bloom-delay: 3.3s; --flower-size: 64px; }
+        .stem:nth-child(19) { --stem-left: 80%; --stem-height: 220px; --stem-angle: 14deg;  --bloom-delay: 3.5s; --flower-size: 63px; }
+        .stem:nth-child(20) { --stem-left: 48%; --stem-height: 190px; --stem-angle: 1deg;   --bloom-delay: 3.7s; --flower-size: 54px; z-index: 5; }
+        .stem:nth-child(21) { --stem-left: 52%; --stem-height: 210px; --stem-angle: -2deg;  --bloom-delay: 3.9s; --flower-size: 57px; z-index: 5; }
+
+        /* ดอกไม้ไฟ Particle */
+        .firework-burst { position: absolute; width: 0; height: 0; }
+        .fw-particle {
+            position: absolute;
+            width: 6px; height: 6px; border-radius: 50%;
+            box-shadow: 0 0 20px currentColor, 0 0 10px white;
+            animation: burstOut 1.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+        }
+        @keyframes burstOut {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0.5); opacity: 0; }
+        }
+
+        /* --- ปุ่มและการ์ด --- */
+        .btn {
+            padding: 12px 35px;
+            background: linear-gradient(45deg, var(--accent-red), #ff8fa3);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 77, 109, 0.4);
+            transition: 0.3s;
+            font-family: 'Dancing Script', cursive;
+            z-index: 100;
+        }
+        .btn:hover { transform: scale(1.1) translateY(-3px); }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            max-width: 400px;
+            margin: 20px;
+        }
+        .card img { width: 100%; border-radius: 15px; margin-bottom: 20px; }
+        .card h1 { font-family: 'Dancing Script', cursive; color: var(--accent-red); font-size: 2.5rem; margin: 10px 0; }
+
+        /* --- เกมเติมหัวใจ --- */
+        .heart-box {
+            position: relative;
+            width: 160px; height: 160px;
+            margin: 20px auto;
+            cursor: pointer;
+        }
+        .heart-bg, .heart-fill {
+            position: absolute; width: 100%; height: 100%;
+            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat center/contain;
+            -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat center/contain;
+        }
+        .heart-bg { background: #333; }
+        .heart-fill { background: var(--accent-red); height: 0%; bottom: 0; transition: height 0.2s ease; }
+        .pulse { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    </style>
+</head>
+<body>
+
+    <div class="stars-bg" id="stars"></div>
+
+    <div id="page1" class="screen active">
+        <div id="fireworks-container"></div>
+        <div class="garden">
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+            <div class="stem"><div class="flower-head">🌹</div></div>
+        </div>
+        <button class="btn" onclick="goToPage(2)">See My Surprise ❤️</button>
+    </div>
+
+    <div id="page2" class="screen">
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=400&auto=format&fit=crop" alt="Valentine">
+            <h1>Happy Valentine's Day</h1>
+            <p>
+                สุขสันต์วันวาเลนไทน์นะ<br>
+                ดีใจที่ได้เจอนะครับพี่เบล... ยิ้มเยอะๆ น้าา<br>
+                ปั่นงานเหนื่อยๆ แวะมาดูสวนดอกไม้ในนี้ได้เสมอนะครับ<br>
+                ขอบคุณที่ยอมเป็นนางแบบให้นะครับ55555
+            </p>
+        </div>
+        <button class="btn" onclick="goToPage(3)">เติมความรักให้กัน 💕</button>
+    </div>
+
+    <div id="page3" class="screen">
+        <h2 class="pulse">กดรัวๆ เพื่อเติมความรักให้เต็ม!</h2>
+        <div class="heart-box" onclick="fillHeart()">
+            <div class="heart-bg"></div>
+            <div class="heart-fill" id="heartFill"></div>
+        </div>
+        <h2 id="percentText" style="font-size: 2.5rem; margin-top: 10px;">0%</h2>
+        <div id="finalMsg" style="display:none; margin-top: 20px; animation: fadeIn 0.5s;">
+            <p style="font-size: 1.2rem; color: #ff8fa3;">ความรักเต็มร้อยแล้ว! มีความสุขมากๆ ในวันวาเลนไทน์นะครับ ❤️</p>
+            <button class="btn" onclick="goToPage(1)">ดูสวนกุหลาบอีกครั้ง 🎆</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. สร้างดาวพื้นหลัง ---
+        const starsContainer = document.getElementById('stars');
+        for(let i=0; i<80; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 2 + 1 + 'px';
+            star.style.width = size;
+            star.style.height = size;
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.setProperty('--duration', Math.random() * 3 + 2 + 's');
+            starsContainer.appendChild(star);
+        }
+
+        // --- 2. ระบบดอกไม้ไฟ ---
+        const fwContainer = document.getElementById('fireworks-container');
+        function launchFirework() {
+            if (!document.getElementById('page1').classList.contains('active')) return;
+            
+            const burst = document.createElement('div');
+            burst.className = 'firework-burst';
+            burst.style.left = Math.random() * 90 + 5 + '%';
+            burst.style.bottom = Math.random() * 50 + 40 + '%';
+            fwContainer.appendChild(burst);
+
+            const colors = ['#ffdd00', '#ff3300', '#00ffcc', '#ff00ff', '#66ff33', '#ffffff'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            for (let i = 0; i < 50; i++) {
+                const p = document.createElement('div');
+                p.className = 'fw-particle';
+                p.style.backgroundColor = color;
+                p.style.color = color;
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * 200 + 100;
+                p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+                p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+                burst.appendChild(p);
+            }
+            setTimeout(() => burst.remove(), 2000);
+        }
+        setInterval(launchFirework, 800);
+
+        // --- 3. ฟังก์ชันเปลี่ยนหน้า ---
+        function goToPage(pageNum) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('page' + pageNum).classList.add('active');
+            
+            if(pageNum === 1) {
+                currentPercent = 0;
+                document.getElementById('heartFill').style.height = '0%';
+                document.getElementById('percentText').innerText = '0%';
+                document.getElementById('finalMsg').style.display = 'none';
+                document.getElementById('percentText').style.color = 'white';
+            }
+        }
+
+        // --- 4. เกมเติมหัวใจ ---
+        let currentPercent = 0;
+        function fillHeart() {
+            if (currentPercent < 100) {
+                currentPercent += 10;
+                if(currentPercent > 100) currentPercent = 100;
+                
+                document.getElementById('heartFill').style.height = currentPercent + '%';
+                document.getElementById('percentText').innerText = currentPercent + '%';
+
+                if (currentPercent === 100) {
+                    document.getElementById('percentText').innerText = "FULL OF LOVE! ❤️";
+                    document.getElementById('percentText').style.color = "#ff4d6d";
+                    document.getElementById('finalMsg').style.display = 'block';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

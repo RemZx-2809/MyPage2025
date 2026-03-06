@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32-CAM Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #00d4ff; --secondary: #4f7df9; --accent: #ff4757; --bg-dark: #0f172a; --card-bg: rgba(30, 41, 59, 0.7); --text: #f1f5f9; --border: rgba(255,255,255,0.1); --transition: all 0.3s ease; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: radial-gradient(circle at top right, #1e293b, #0f172a); color: var(--text); min-height: 100vh; padding: 2rem 1rem; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 2rem; }
+        h1 { font-size: 2.5rem; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .grid-layout { display: grid; grid-template-columns: 1fr 350px; gap: 1.5rem; }
+        @media (max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
+        .card { background: var(--card-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 1.5rem; border: 1px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        .video-wrapper { background: #000; border-radius: 15px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        #stream { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .gps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .gps-box { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; text-align: center; }
+        .gps-label { font-size: 0.8rem; color: var(--primary); font-weight: 500; }
+        .gps-value { font-size: 1.1rem; font-family: monospace; }
+        .control-group { margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: 10px; }
+        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; font-family: 'Kanit'; transition: var(--transition); display: flex; align-items: center; gap: 8px; color: white; }
+        .btn-primary { background: var(--secondary); }
+        .btn-danger { background: var(--accent); }
+        .btn-success { background: #2ed573; color: #000; }
+        input[type="text"] { background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 10px; border-radius: 10px; color: #fff; width: 100%; margin-bottom: 10px; }
+        .status-dot { height: 10px; width: 10px; background: #555; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .status-online { background: #2ed573; box-shadow: 0 0 8px #2ed573; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>ESP32-CAM Ultimate Dashboard</h1>
+        <p><span id="status-dot" class="status-dot"></span> System Status: <span id="conn-status">Disconnected</span></p>
+    </header>
+
+    <div class="grid-layout">
+        <div class="left-col">
+            <div class="card">
+                <div class="video-wrapper">
+                    <div id="loading">Waiting for Stream...</div>
+                    <img id="stream" src="" alt="Stream">
+                </div>
+                <div class="control-group">
+                    <input type="text" id="ipAddress" placeholder="IP Address (e.g. 192.168.1.50)" value="10.186.207.58">
+                    <button class="btn btn-primary" onclick="startStream()">🌐 Connect Stream</button>
+                    <button class="btn btn-success" onclick="captureImage()">📸 Capture</button>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 1.5rem;">
+                <h3 style="margin-bottom:1rem;">🖼️ Recent Gallery</h3>
+                <div id="gallery" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;"></div>
+            </div>
+        </div>
+
+        <div class="right-col">
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h3 style="color: var(--primary);">📍 WiFi Location Data</h3>
+                <div class="gps-grid">
+                    <div class="gps-box"><div class="gps-label">LATITUDE</div><div class="gps-value" id="lat">0.0000</div></div>
+                    <div class="gps-box"><div class="gps-label">LONGITUDE</div><div class="gps-value" id="lon">0.0000</div></div>
+                    <div class="gps-box"><div class="gps-label">SPEED</div><div class="gps-value" id="speed">0.0 km/h</div></div>
+                    <div class="gps-box"><div class="gps-label">SATELLITES</div><div class="gps-value" id="sats">0</div></div>
+                </div>
+                <button class="btn btn-primary" style="width:100%; margin-top:15px; justify-content:center;" onclick="openMap()">🗺️ View on Google Maps</button>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom:1rem;">⚙️ Hardware Control</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn btn-primary" onclick="sendCommand('led/on')">💡 Flash ON</button>
+                    <button class="btn btn-danger" onclick="sendCommand('led/off')">💡 Flash OFF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let ip = "";
+    let gpsInterval = null;
+
+    function startStream() {
+        ip = document.getElementById('ipAddress').value.trim();
+        if(!ip) return alert("กรุณาใส่ IP");
+        const streamImg = document.getElementById('stream');
+        streamImg.src = `http://${ip}:81/stream`; 
+        
+        streamImg.onload = () => {
+            streamImg.style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('status-dot').className = 'status-dot status-online';
+            document.getElementById('conn-status').innerText = "Connected";
+            if(gpsInterval) clearInterval(gpsInterval);
+            gpsInterval = setInterval(fetchGPS, 5000);
+            fetchGPS();
+        };
+
+        streamImg.onerror = () => {
+            alert("ไม่สามารถดึงภาพได้! เช็ค IP และ WiFi วงเดียวกันหรือไม่?");
+        };
+    }
+
+    function sendCommand(cmd) {
+        if(!ip) return alert("เชื่อมต่อก่อนครับ");
+        fetch(`http://${ip}/${cmd}`).catch(err => console.error("Error"));
+    }
+
+    function fetchGPS() {
+        if(!ip) return;
+        fetch(`http://${ip}/gps`).then(res => res.json()).then(data => {
+            document.getElementById('lat').innerText = data.lat.toFixed(6);
+            document.getElementById('lon').innerText = data.lon.toFixed(6);
+            document.getElementById('speed').innerText = data.speed + " km/h";
+            document.getElementById('sats').innerText = data.sats;
+        }).catch(e => console.log("Fetching GPS..."));
+    }
+
+    function openMap() {
+        const lat = document.getElementById('lat').innerText;
+        const lon = document.getElementById('lon').innerText;
+        if(lat !== "0.0000") window.open(`https://www.google.com/maps?q=${lat},${lon}`, '_blank');
+        else alert("ยังไม่มีข้อมูลพิกัด");
+    }
+
+    function captureImage() {
+        if(!ip) return alert("เชื่อมต่อก่อนครับ");
+        const url = `http://${ip}/capture?t=${new Date().getTime()}`;
+        addToGallery(url);
+    }
+
+    function addToGallery(src) {
+        const gallery = document.getElementById('gallery');
+        const img = document.createElement('img');
+        img.src = src;
+        img.style = "height: 100px; border-radius: 10px; cursor: pointer; border: 2px solid var(--border);";
+        img.onclick = () => window.open(src, '_blank');
+        gallery.prepend(img);
+    }
+</script>
+</body>
+</html>
